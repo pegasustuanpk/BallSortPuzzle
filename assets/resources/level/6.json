@@ -1,0 +1,50 @@
+{
+  "listBottle": [
+    {
+      "listWater": [
+        7,
+        13,
+        13,
+        8
+      ]
+    },
+    {
+      "listWater": [
+        8,
+        8,
+        4,
+        13
+      ]
+    },
+    {
+      "listWater": [
+        4,
+        7,
+        8,
+        11
+      ]
+    },
+    {
+      "listWater": [
+        7,
+        11,
+        11,
+        13
+      ]
+    },
+    {
+      "listWater": [
+        11,
+        4,
+        7,
+        4
+      ]
+    },
+    {
+      "listWater": []
+    },
+    {
+      "listWater": []
+    }
+  ]
+}

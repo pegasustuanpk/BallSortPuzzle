@@ -1,0 +1,24 @@
+{
+  "listBottle": [
+    {
+      "listWater": [
+        12,
+        12
+      ]
+    },
+    {
+      "listWater": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "listWater": [
+        12,
+        12,
+        1
+      ]
+    }
+  ]
+}
