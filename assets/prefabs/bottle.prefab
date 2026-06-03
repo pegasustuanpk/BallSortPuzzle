@@ -243,6 +243,9 @@
       "__uuid__": "8dc8fbf2-3a34-446e-99cd-18ca9ce44f58",
       "__expectedType__": "cc.Prefab"
     },
+    "spriteNode": {
+      "__id__": 5
+    },
     "_id": ""
   },
   {
