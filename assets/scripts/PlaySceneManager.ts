@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Prefab, Layout, instantiate, view, Vec3, UITransform, resources, JsonAsset } from 'cc';
 import { Ball } from './Ball';
 import { Bottle } from './Bottle';
+import { GameEvent, EVENT_NAME } from './EventManager';
 const { ccclass, property } = _decorator;
 
 const SPACING_X = 20;
@@ -22,6 +23,16 @@ export class PlaySceneManager extends Component
     onLoad(): void 
     {
         PlaySceneManager.instance = this;
+    }
+
+    onEnable()
+    {
+        GameEvent.on(EVENT_NAME.BOTTLE_CLICK,this.onBottleClick,this);
+    }
+
+    onDisable()
+    {
+        GameEvent.off(EVENT_NAME.BOTTLE_CLICK,this.onBottleClick,this);
     }
 
     async start() 
@@ -73,10 +84,10 @@ export class PlaySceneManager extends Component
         this.scale = Math.min(1, scaleX, scaleY);
 
         // Bottle
-        this.initBottle(rowList, bottleWidth*this.scale, bottleHeight*this.scale);
+        this.initBottleList(rowList, bottleWidth*this.scale, bottleHeight*this.scale);
     }
 
-    private initBottle(rowList : number[], bottleWidth : number, bottleHeight : number)
+    private initBottleList(rowList : number[], bottleWidth : number, bottleHeight : number)
     {
         // Data
         const ui = this.bottlePrefab.data.getComponent(UITransform)!;
@@ -87,7 +98,7 @@ export class PlaySceneManager extends Component
         const startY = (totalH + bottleHeight) * 0.5;
         let bottleIndex = 0;
 
-        // set Pos
+        // Bottle
         for (let row = 0; row < rowCount; row++)
         {
             const colCount = rowList[row];
@@ -172,7 +183,7 @@ export class PlaySceneManager extends Component
         bottleNode.parent = this.node;
         const bottle = bottleNode.getComponent(Bottle)!;
         this.bottleList.push(bottle);
-        bottle.bottle(colorList, pos, scale);
+        bottle.initBottle(colorList, pos, scale);
     }
 
     update(deltaTime: number) 

@@ -1,5 +1,6 @@
-import { _decorator, Component, Node, Prefab, Vec3, Vec2, instantiate, UITransform, tween, Sprite, input, Input, EventTouch } from 'cc';
+import { _decorator, Component, Node, Prefab, Vec3, Vec2, instantiate, UITransform, tween, Sprite, input, Input, EventTouch, ParticleSystem } from 'cc';
 import { Ball } from './Ball';
+import { GameEvent, EVENT_NAME } from './EventManager';
 import { PlaySceneManager } from './PlaySceneManager';
 const { ccclass, property } = _decorator;
 
@@ -14,12 +15,17 @@ export class Bottle extends Component
     @property(Sprite)
     spriteNode : Sprite | null = null;
 
+    
+    @property(ParticleSystem)
+    fireworkParticle : ParticleSystem | null = null;
+
     private width : number = 1;
     private height : number = 1;
     private ballList: Ball[] = [];
+    private isComplete : boolean = false;
     private isReceive: boolean = false;
 
-    bottle(colorList: number[], pos : Vec3, scale : number)
+    initBottle(colorList: number[], pos : Vec3, scale : number)
     {
         // Data
         this.node.setScale(scale,scale,1);
@@ -38,17 +44,17 @@ export class Bottle extends Component
     {
         const ballNode = instantiate(this.ballPrefab);
         const ball = ballNode.getComponent(Ball)!;
-        ball.ball(color, this.ballList.length, this);
+        ball.initBall(color, this.ballList.length, this);
         this.ballList.push(ball);
         ball.node.setSiblingIndex(ball.index);
     }
 
-    public isComplete() : boolean
+    public checkComplete() : boolean
     {
-        if (this.isFull()) return false; 
+        if (!this.isFull()) return false; 
         for(let i =0; i < this.ballList.length;i++)
         {
-            if (this.ballList[i] !== this.ballList[0]) return false;
+            if (this.ballList[i].color !== this.ballList[0].color) return false;
         }
         return true;
     }
@@ -61,6 +67,11 @@ export class Bottle extends Component
     public setIsReceive(isReceived : boolean)
     {
         this.isReceive = isReceived;
+        if (!isReceived && this.checkComplete() && !this.isComplete)
+        {
+            this.spawnStarEffect();
+            this.isComplete = true;
+        }
     }
 
     public getIsReceive() : boolean
@@ -168,12 +179,25 @@ export class Bottle extends Component
         // Data
         this.spriteNode.node.setSiblingIndex(5);
         this.isReceive = false;
+        this.isComplete = false;
     }
 
     onTouchStart(event : EventTouch)
     {
-        if (this.getIsReceive()) return;
-        PlaySceneManager.instance.onBottleClick(this);
+        if (this.getIsReceive() || this.isComplete) return;
+
+        // event
+        GameEvent.emit(EVENT_NAME.BOTTLE_CLICK,this);
+
+        // singleton
+        //PlaySceneManager.instance.onBottleClick(this);
+    }
+
+    public spawnStarEffect() 
+    {
+        this.fireworkParticle.node.setSiblingIndex(999);
+        this.fireworkParticle?.play();
+        this.scheduleOnce(() => {this.fireworkParticle.node.destroy();}, 2);
     }
 
     update(deltaTime: number)

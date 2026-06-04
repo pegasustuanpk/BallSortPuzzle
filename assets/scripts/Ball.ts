@@ -3,7 +3,8 @@ import { Bottle } from './Bottle';
 import { PlaySceneManager } from './PlaySceneManager';
 const { ccclass, property } = _decorator;
 
-export const SPEED_BALL_MOVE = 1800;
+export const SPEED_BALL_MOVE_1 = 1600;
+export const SPEED_BALL_MOVE_2 = 2500;
 
 @ccclass('Ball')
 export class Ball extends Component 
@@ -17,7 +18,7 @@ export class Ball extends Component
     public index : number = 1;
     public color : number = 1;
 
-    ball(color:number, index:number, curBottle:Bottle)
+    initBall(color:number, index:number, curBottle:Bottle)
     {
         this.color = color;
         this.index = index;
@@ -40,14 +41,20 @@ export class Ball extends Component
     public setlect()
     {
         let curDis = this.calculateDistance(this.node.getWorldPosition(), this.curBottle.getPosTop());
-        let timeMove = curDis/(SPEED_BALL_MOVE*PlaySceneManager.instance.scale)
+        let timeMove = curDis/(SPEED_BALL_MOVE_1*PlaySceneManager.instance.scale)
         tween(this.node).to(timeMove, {worldPosition: this.curBottle.getPosTop()}).start();
+        tween(this.node)
+        .to(timeMove, {
+            scale: new Vec3(0.9, 1.1, 1)
+        })
+        .to(0.01,{scale: new Vec3(1, 1, 1)})
+        .start();
     }
 
     public unSelect()
     {
         let curDis = this.calculateDistance(this.node.getWorldPosition(), this.getPositionInBottle());
-        let timeMove = curDis/(SPEED_BALL_MOVE*PlaySceneManager.instance.scale)
+        let timeMove = curDis/(SPEED_BALL_MOVE_1*PlaySceneManager.instance.scale)
         tween(this.node).to(timeMove, {worldPosition: this.getPositionInBottle()}).start();
     }
 
@@ -64,7 +71,7 @@ export class Ball extends Component
         const oldTop = oldBottle.getPosTop();
         const newTop = this.curBottle.getPosTop();
         const endPos = this.getPositionInBottle();
-        const speed = SPEED_BALL_MOVE * PlaySceneManager.instance.scale;
+        const speed = SPEED_BALL_MOVE_1 * PlaySceneManager.instance.scale;
         const timeUp = Vec3.distance(startPos, oldTop) / speed;
         const timeHorizontal = Vec3.distance(oldTop, newTop) / speed;
         const timeDown = Vec3.distance(newTop, endPos) / speed;
@@ -72,6 +79,29 @@ export class Ball extends Component
         // Tween
         Tween.stopAllByTarget(this.node);
         tween(this.node)
+        .to(timeUp, {worldPosition : oldBottle.getPosTop()})
+        .call(() =>{
+            const worldPos = this.node.worldPosition.clone();
+            this.node.setParent(PlaySceneManager.instance.node);
+            this.node.setScale(PlaySceneManager.instance.scale,PlaySceneManager.instance.scale,1);
+            this.node.setWorldPosition(worldPos);
+            this.node.setSiblingIndex(999);
+        })
+        .to(timeHorizontal, {worldPosition : this.curBottle.getPosTop()})
+        .call(() =>{
+            const worldPos = this.node.worldPosition.clone();
+            this.node.setParent(this.curBottle.node);
+            this.node.setScale(1,1,1);
+            this.node.setWorldPosition(worldPos);
+            this.node.setSiblingIndex(this.index);
+        })
+        .to(timeDown, {worldPosition: this.getPositionInBottle()})
+        .call(() =>{
+            if (isLast) this.curBottle.setIsReceive(false);
+        })
+        .start();
+
+               tween(this.node)
         .to(timeUp, {worldPosition : oldBottle.getPosTop()})
         .call(() =>{
             const worldPos = this.node.worldPosition.clone();
