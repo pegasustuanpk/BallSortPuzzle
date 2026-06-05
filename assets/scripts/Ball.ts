@@ -45,6 +45,7 @@ export class Ball extends Component
     setPositioninBottle()
     {
         this.node.setWorldPosition(this.getPositionInBottle());
+        this.node.setSiblingIndex(this.index);
     }
 
     public setlect()

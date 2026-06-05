@@ -304,6 +304,7 @@ export class PlaySceneManager extends Component
         {
             let ball = move.bottleDes.popBall();
             move.bottleStart.pushBall(ball)
+            ball.setCurBottle(move.bottleStart);
             ball.node.setParent(move.bottleStart.node);
             ball.setPositioninBottle();
         }
