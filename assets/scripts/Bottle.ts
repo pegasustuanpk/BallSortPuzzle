@@ -15,14 +15,13 @@ export class Bottle extends Component
     @property(Sprite)
     spriteNode : Sprite | null = null;
 
-    
     @property(ParticleSystem)
     fireworkParticle : ParticleSystem | null = null;
 
     private width : number = 1;
     private height : number = 1;
     private ballList: Ball[] = [];
-    private isComplete : boolean = false;
+    private isFinished : boolean = false;
     private isReceive: boolean = false;
 
     initBottle(colorList: number[], pos : Vec3, scale : number)
@@ -44,12 +43,14 @@ export class Bottle extends Component
     {
         const ballNode = instantiate(this.ballPrefab);
         const ball = ballNode.getComponent(Ball)!;
+        ball.node.setScale(0,0,1);
         ball.initBall(color, this.ballList.length, this);
         this.ballList.push(ball);
+        tween(ball.node).to(0.1*ball.index, {scale: new Vec3(1,1,1)}).start();
         ball.node.setSiblingIndex(ball.index);
     }
 
-    public checkComplete() : boolean
+    public checkFinished() : boolean
     {
         if (!this.isFull()) return false; 
         for(let i =0; i < this.ballList.length;i++)
@@ -67,10 +68,11 @@ export class Bottle extends Component
     public setIsReceive(isReceived : boolean)
     {
         this.isReceive = isReceived;
-        if (!isReceived && this.checkComplete() && !this.isComplete)
+        if (!isReceived && this.checkFinished() && !this.isFinished)
         {
             this.spawnStarEffect();
-            this.isComplete = true;
+            this.isFinished = true;
+            GameEvent.emit(EVENT_NAME.BOTTLE_FINISH,this);
         }
     }
 
@@ -82,6 +84,11 @@ export class Bottle extends Component
     public isEmpty() : boolean
     {
         return this.ballList.length === 0;
+    }
+
+    public getIsFinished() : boolean
+    {
+        return this.isFinished;
     }
 
     public isFull() : boolean
@@ -127,11 +134,12 @@ export class Bottle extends Component
     {
         let countDelay = count;
         let isLast = false;
+        let timePreBallUp = 0;
         while(count > 0)
         {
             const ball = this.ballList.pop();
             if (count == 1) isLast = true;
-            ball.changeBottle(bottleDes, countDelay-count, isLast);
+            timePreBallUp = ball.changeBottle(bottleDes, timePreBallUp, isLast);
             count--;
         }
     }
@@ -139,6 +147,12 @@ export class Bottle extends Component
     pushBall(ball : Ball)
     {
         this.ballList.push(ball);
+        ball.index = this.getLengthBallList()-1;
+    }
+
+    popBall() : Ball
+    {
+        return this.ballList.pop();
     }
 
     select()
@@ -179,12 +193,12 @@ export class Bottle extends Component
         // Data
         this.spriteNode.node.setSiblingIndex(5);
         this.isReceive = false;
-        this.isComplete = false;
+        this.isFinished = false;
     }
 
     onTouchStart(event : EventTouch)
     {
-        if (this.getIsReceive() || this.isComplete) return;
+        if (this.getIsReceive() || this.isFinished) return;
 
         // event
         GameEvent.emit(EVENT_NAME.BOTTLE_CLICK,this);

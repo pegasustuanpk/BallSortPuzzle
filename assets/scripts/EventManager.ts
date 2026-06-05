@@ -7,4 +7,5 @@ export const GameEvent = new EventTarget();
 
 export const EVENT_NAME = {
     BOTTLE_CLICK: "BOTTLE_CLICK",
+    BOTTLE_FINISH: "BOTTLE_FINISH",
 };
